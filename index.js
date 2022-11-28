@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -7,13 +8,21 @@ const { MongoClient, ServerApiVersion, ObjectId, ObjectID } = require('mongodb')
 const stripe = require('stripe')(
     'sk_test_51M8SDWAdpdqyZqEI8qp8BeNGgnNjw53ozYEq95sRoZGRlB37xbeBKfcrAPoMO19kdR82ryYjyFC8MS65mEHafQtd00TN7zMGd8',
 );
-require('dotenv').config();
+
 // Handling Uncaught Exception
 process.on('uncaughtException', (err) => {
     console.log(`Error: ${err.message}`);
     console.log(`Shutting down the server due to Uncaught Exception`);
     process.exit(1);
 });
+const path = require('path');
+
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static('build'));
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+    });
+}
 const cookieParser = require('cookie-parser');
 // middleware
 app.use(express.json());
@@ -71,7 +80,7 @@ async function run() {
             res.send(product);
         });
 
-        app.get('/bookings/', jwtVerify, async (req, res) => {
+        app.get('/bookings/', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const bookings = await bookinsCollection.find(query).toArray();
@@ -86,7 +95,8 @@ async function run() {
                 const token = jwt.sign({ email }, process.env.JWT_SECRET, {
                     expiresIn: process.env.JWT_SECRET_EXPIRE,
                 });
-                return res.send({ accessToken: token });
+                console.log(token);
+                return res.status(200).send({ accessToken: token });
             }
 
             res.status(403).send({ token: 'unAuthorize' });
@@ -216,7 +226,7 @@ async function run() {
                 },
             };
             const updatedResult = await bookinsCollection.updateOne(filter, updatedDoc);
-            res.send(result, updatedResult);
+            res.status(201).send(result, updatedResult);
         });
 
         // adviertise route
