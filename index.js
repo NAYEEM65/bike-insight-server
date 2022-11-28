@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
-const uri = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.e40en03.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://bike-insight:yeIuA4eV5meVJAng@cluster0.e40en03.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
